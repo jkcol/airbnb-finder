@@ -1,0 +1,265 @@
+[
+  {
+    "id": "nyc-loft-1",
+    "title": "Modern Loft in SoHo",
+    "description": "Sun-drenched loft with high ceilings, workspace, and blazing fast Wi\u2011Fi.",
+    "location": "New York, NY",
+    "price": 245.0,
+    "guests": 2,
+    "amenities": [
+      "Fast Wi-Fi",
+      "Workspace",
+      "Kitchen",
+      "Air conditioning",
+      "Near subway",
+      "Washer"
+    ],
+    "image_url": "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=1200&auto=format&fit=crop"
+  },
+  {
+    "id": "nyc-brooklyn-2",
+    "title": "Cozy Brooklyn Studio",
+    "description": "Charming studio close to cafes and public transit, perfect for solo travelers.",
+    "location": "Brooklyn, NY",
+    "price": 125.0,
+    "guests": 2,
+    "amenities": [
+      "Wi-Fi",
+      "Kitchen",
+      "Near subway",
+      "Heating"
+    ],
+    "image_url": "https://images.unsplash.com/photo-1505692794403-34d4982f88aa?q=80&w=1200&auto=format&fit=crop"
+  },
+  {
+    "id": "sf-modern-1",
+    "title": "Minimalist Apartment near Mission Bay",
+    "description": "Sleek one-bedroom with city views and gigabit internet, steps from Muni.",
+    "location": "San Francisco, CA",
+    "price": 210.0,
+    "guests": 2,
+    "amenities": [
+      "Fast Wi-Fi",
+      "Elevator",
+      "Gym",
+      "Kitchen",
+      "Near public transit"
+    ],
+    "image_url": "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?q=80&w=1200&auto=format&fit=crop"
+  },
+  {
+    "id": "sf-victorian-2",
+    "title": "Historic Victorian Flat",
+    "description": "Classic charm with modern comforts in the heart of Alamo Square.",
+    "location": "San Francisco, CA",
+    "price": 285.0,
+    "guests": 4,
+    "amenities": [
+      "Wi-Fi",
+      "Kitchen",
+      "Laundry",
+      "Near public transit"
+    ],
+    "image_url": "https://images.unsplash.com/photo-1526129318478-62ed807ebdf9?q=80&w=1200&auto=format&fit=crop"
+  },
+  {
+    "id": "austin-bungalow-1",
+    "title": "East Austin Bungalow",
+    "description": "Laid-back bungalow with porch and BBQ, short scooter ride to downtown.",
+    "location": "Austin, TX",
+    "price": 140.0,
+    "guests": 3,
+    "amenities": [
+      "Wi-Fi",
+      "Kitchen",
+      "Free parking",
+      "Pet-friendly"
+    ],
+    "image_url": "https://images.unsplash.com/photo-1472220625704-91e1462799b2?q=80&w=1200&auto=format&fit=crop"
+  },
+  {
+    "id": "chicago-loft-1",
+    "title": "River North Industrial Loft",
+    "description": "Open-concept loft with exposed brick, near the L and great restaurants.",
+    "location": "Chicago, IL",
+    "price": 175.0,
+    "guests": 2,
+    "amenities": [
+      "Fast Wi-Fi",
+      "Workspace",
+      "Kitchen",
+      "Near public transit",
+      "Washer"
+    ],
+    "image_url": "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?q=80&w=1200&auto=format&fit=crop"
+  },
+  {
+    "id": "miami-ocean-1",
+    "title": "Oceanfront Condo with Pool",
+    "description": "Wake up to ocean views, steps from the beach and restaurants.",
+    "location": "Miami Beach, FL",
+    "price": 260.0,
+    "guests": 4,
+    "amenities": [
+      "Wi-Fi",
+      "Pool",
+      "Gym",
+      "Air conditioning",
+      "Beach access"
+    ],
+    "image_url": "https://images.unsplash.com/photo-1505691723518-36a5ac3b2b8f?q=80&w=1200&auto=format&fit=crop"
+  },
+  {
+    "id": "denver-ski-1",
+    "title": "Ski-In/Ski-Out Mountain Cabin",
+    "description": "Rustic cabin with fireplace and hot tub, perfect for winter getaways.",
+    "location": "Breckenridge, CO",
+    "price": 320.0,
+    "guests": 6,
+    "amenities": [
+      "Wi-Fi",
+      "Hot tub",
+      "Fireplace",
+      "Ski-in/Ski-out",
+      "Kitchen"
+    ],
+    "image_url": "https://images.unsplash.com/photo-1481277542470-605612bd2d61?q=80&w=1200&auto=format&fit=crop"
+  },
+  {
+    "id": "seattle-lake-1",
+    "title": "Lakefront Cottage",
+    "description": "Peaceful stay with canoe access and fiber internet; 20 min to downtown.",
+    "location": "Seattle, WA",
+    "price": 190.0,
+    "guests": 4,
+    "amenities": [
+      "Fast Wi-Fi",
+      "Lake access",
+      "Kitchen",
+      "Free parking"
+    ],
+    "image_url": "https://images.unsplash.com/photo-1449844908441-8829872d2607?q=80&w=1200&auto=format&fit=crop"
+  },
+  {
+    "id": "la-hollywood-1",
+    "title": "Bright Studio near Hollywood",
+    "description": "Sunny studio with balcony and dedicated workspace in central LA.",
+    "location": "Los Angeles, CA",
+    "price": 165.0,
+    "guests": 2,
+    "amenities": [
+      "Wi-Fi",
+      "Workspace",
+      "Air conditioning",
+      "Gym"
+    ],
+    "image_url": "https://images.unsplash.com/photo-1523217582562-09d0def993a6?q=80&w=1200&auto=format&fit=crop"
+  },
+  {
+    "id": "paris-marais-1",
+    "title": "Chic Flat in Le Marais",
+    "description": "Elegant Parisian flat with Juliet balcony and high-speed internet.",
+    "location": "Paris, France",
+    "price": 230.0,
+    "guests": 2,
+    "amenities": [
+      "Fast Wi-Fi",
+      "Kitchen",
+      "Washer",
+      "Near metro"
+    ],
+    "image_url": "https://images.unsplash.com/photo-1505691938895-1758d7feb511?q=80&w=1200&auto=format&fit=crop"
+  },
+  {
+    "id": "tokyo-shibuya-1",
+    "title": "Compact Studio in Shibuya",
+    "description": "Smartly designed studio steps from JR lines; ideal for remote work.",
+    "location": "Tokyo, Japan",
+    "price": 120.0,
+    "guests": 2,
+    "amenities": [
+      "Fast Wi-Fi",
+      "Workspace",
+      "Near public transit",
+      "A/C"
+    ],
+    "image_url": "https://images.unsplash.com/photo-1484154218962-a197022b5858?q=80&w=1200&auto=format&fit=crop"
+  },
+  {
+    "id": "barcelona-gothic-1",
+    "title": "Gothic Quarter Terrace Apt",
+    "description": "Sunny flat with terrace, near tapas bars and metro.",
+    "location": "Barcelona, Spain",
+    "price": 150.0,
+    "guests": 3,
+    "amenities": [
+      "Wi-Fi",
+      "Terrace",
+      "Kitchen",
+      "Near metro"
+    ],
+    "image_url": "https://images.unsplash.com/photo-1460317442991-0ec209397118?q=80&w=1200&auto=format&fit=crop"
+  },
+  {
+    "id": "nyc-uptown-3",
+    "title": "Upper West Side Family Suite",
+    "description": "Quiet two-bedroom near Central Park; elevator building.",
+    "location": "New York, NY",
+    "price": 290.0,
+    "guests": 5,
+    "amenities": [
+      "Wi-Fi",
+      "Elevator",
+      "Kitchen",
+      "Washer",
+      "Near subway"
+    ],
+    "image_url": "https://images.unsplash.com/photo-1502005097973-6a7082348e28?q=80&w=1200&auto=format&fit=crop"
+  },
+  {
+    "id": "nyc-loft-4",
+    "title": "Sleek Loft near DUMBO",
+    "description": "Industrial-chic loft with skyline views and gigabit fiber.",
+    "location": "Brooklyn, NY",
+    "price": 260.0,
+    "guests": 2,
+    "amenities": [
+      "Fast Wi-Fi",
+      "Workspace",
+      "Kitchen",
+      "Near subway",
+      "Washer"
+    ],
+    "image_url": "https://images.unsplash.com/photo-1493809842364-78817add7ffb?q=80&w=1200&auto=format&fit=crop"
+  },
+  {
+    "id": "nashville-musicrow-1",
+    "title": "Music Row Condo",
+    "description": "Walk to live music venues; modern amenities and parking.",
+    "location": "Nashville, TN",
+    "price": 155.0,
+    "guests": 3,
+    "amenities": [
+      "Wi-Fi",
+      "Free parking",
+      "Kitchen",
+      "Washer"
+    ],
+    "image_url": "https://images.unsplash.com/photo-1507086182422-97bd7ca2412d?q=80&w=1200&auto=format&fit=crop"
+  },
+  {
+    "id": "london-shoreditch-1",
+    "title": "Loft in Shoreditch",
+    "description": "Trendy loft with brick walls and coworking desk; steps from Overground.",
+    "location": "London, UK",
+    "price": 240.0,
+    "guests": 2,
+    "amenities": [
+      "Fast Wi-Fi",
+      "Workspace",
+      "Near public transit",
+      "Kitchen"
+    ],
+    "image_url": "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=1200&auto=format&fit=crop"
+  }
+]

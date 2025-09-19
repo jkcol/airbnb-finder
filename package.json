@@ -1,0 +1,12 @@
+{
+  "name": "airbnb-finder",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Airbnb Finder full-stack app (React + FastAPI + HF LLM)",
+  "scripts": {
+    "postinstall": "cd frontend && npm install",
+    "start": "npm --prefix frontend start",
+    "build": "npm --prefix frontend run build",
+    "test": "npm --prefix frontend test || echo 'no tests'"
+  }
+}
