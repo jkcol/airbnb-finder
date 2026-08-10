@@ -8,6 +8,18 @@ A full-stack demo web application that lets users describe the Airbnb they want 
 - **Frontend:** React (Vite)
 - **Data:** Mock dataset in `data/listings.json`
 
+## Stack
+
+**Backend:** Python, FastAPI, Uvicorn, PyTorch, Hugging Face `transformers`
+**Frontend:** React, Vite, JavaScript (JSX), CSS
+**ML:** sentence embeddings (`intfloat/e5-small-v2`), cosine-similarity ranking, semantic search
+**Concepts:** REST API design, vector similarity, natural-language query understanding
+
+> **Scope:** this is a self-contained demo. Listings come from a mock dataset in
+> `data/listings.json` — there is no Airbnb API integration, and the project is not
+> affiliated with Airbnb. The point of the project is the embedding-based semantic
+> search pipeline, not the data source.
+
 ---
 
 ## Features
