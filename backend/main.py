@@ -9,8 +9,6 @@ import requests
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from transformers import AutoTokenizer, AutoModel
-import torch
 from dotenv import load_dotenv
 
 # Load env vars from .env if present
@@ -20,6 +18,11 @@ USE_HF_API = os.getenv("USE_HF_API", "0").lower() in {"1", "true", "yes"}
 HF_TOKEN = os.getenv("HUGGINGFACE_API_TOKEN", "").strip()
 MODEL_NAME = os.getenv("MODEL_NAME", "intfloat/e5-small-v2")
 TOP_K_DEFAULT = int(os.getenv("TOP_K_DEFAULT", "10"))
+# The legacy api-inference.huggingface.co host has been retired in favor of the router.
+HF_API_URL = os.getenv(
+    "HF_API_URL",
+    "https://router.huggingface.co/hf-inference/models/{model}/pipeline/feature-extraction",
+)
 
 DATA_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "listings.json")
 DATA_PATH = os.path.abspath(DATA_PATH)
@@ -38,14 +41,14 @@ class HFInferenceAPIEmbedder(Embedder):
             raise ValueError("HUGGINGFACE_API_TOKEN is required for Inference API mode")
         self.model_name = model_name
         self.token = token
-        self.endpoint = f"https://api-inference.huggingface.co/pipeline/feature-extraction/{model_name}"
+        self.endpoint = HF_API_URL.format(model=model_name)
         self.headers = {"Authorization": f"Bearer {self.token}"}
 
     def embed(self, texts: List[str]) -> np.ndarray:
         payload = {"inputs": texts}
         resp = requests.post(self.endpoint, headers=self.headers, json=payload, timeout=60)
         if resp.status_code != 200:
-            raise HTTPException(status_code=500, detail=f"HF Inference API error: {resp.status_code} {resp.text}")
+            raise HTTPException(status_code=502, detail=f"HF Inference API error: {resp.status_code} {resp.text}")
         arr = np.array(resp.json(), dtype=np.float32)
         # Some models may return a list of token embeddings; if so, mean-pool
         if arr.ndim == 3:
@@ -56,6 +59,11 @@ class HFInferenceAPIEmbedder(Embedder):
 
 class HFLocalEmbedder(Embedder):
     def __init__(self, model_name: str):
+        # Imported lazily so Inference API mode works without torch/transformers installed
+        import torch
+        from transformers import AutoTokenizer, AutoModel
+
+        self.torch = torch
         self.model_name = model_name
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -63,8 +71,11 @@ class HFLocalEmbedder(Embedder):
         self.model.eval()
         self.model.to(self.device)
 
-    @torch.no_grad()
     def embed(self, texts: List[str]) -> np.ndarray:
+        with self.torch.no_grad():
+            return self._embed(texts)
+
+    def _embed(self, texts: List[str]) -> np.ndarray:
         # Tokenize
         encoded = self.tokenizer(
             texts,
@@ -188,7 +199,7 @@ def health():
 def search(req: SearchRequest):
     if not req.query or not req.query.strip():
         raise HTTPException(status_code=400, detail="Query is required")
-    k = req.top_k or TOP_K_DEFAULT
+    k = TOP_K_DEFAULT if req.top_k is None else req.top_k
     k = max(1, min(k, 50))
 
     query_text = f"query: {req.query.strip()}"

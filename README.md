@@ -58,7 +58,7 @@ export USE_HF_API=1
 uvicorn backend.main:app --reload --port 8000
 ```
 
-> **Note:** If you use the remote API, requests are sent to `https://api-inference.huggingface.co/pipeline/feature-extraction/{model}`.
+> **Note:** If you use the remote API, requests are sent to `https://router.huggingface.co/hf-inference/models/{model}/pipeline/feature-extraction` (override with `HF_API_URL`; `{model}` is substituted). The old `api-inference.huggingface.co` host has been retired by Hugging Face.
 
 ### 2) Frontend Setup
 ```bash
@@ -78,6 +78,7 @@ You can customize behavior using environment variables (for the backend):
 - `HUGGINGFACE_API_TOKEN` — your token for the Inference API (required if `USE_HF_API=1`).
 - `MODEL_NAME` — defaults to `intfloat/e5-small-v2`.
 - `TOP_K_DEFAULT` — default number of results (defaults to `10`).
+- `HF_API_URL` — Inference API URL template; `{model}` is replaced with `MODEL_NAME`.
 
 Create a `.env` file in the project root if you'd like (the backend loads it):
 ```env
@@ -103,7 +104,7 @@ package.json
 
 ## API
 - `POST /api/search`
-  - **Body:** `{ "query": string, "top_k"?: number }
+  - **Body:** `{ "query": string, "top_k"?: number }`
   - **Response:** `{ results: Array< Listing & { score: number } > }`
 
 - `GET /health` → `{ status: "ok" }`

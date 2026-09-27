@@ -28,3 +28,4 @@ body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial
 .tag { font-size: 12px; border: 1px solid #eee; background: #fafafa; padding: 4px 8px; border-radius: 9999px; color: #555; }
 .footer { text-align: center; color: #777; font-size: 13px; padding: 24px; }
 .small { color: #777; font-size: 12px; }
+.error { color: #b00020; background: #fdecee; border: 1px solid #f5c2c7; border-radius: 8px; padding: 10px 12px; font-size: 14px; }
