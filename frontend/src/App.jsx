@@ -1,7 +1,28 @@
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
+// Set VITE_API_BASE (e.g. http://localhost:8000) to search via the FastAPI
+// backend; otherwise the model runs in the browser and no server is needed.
+const API_BASE = import.meta.env.VITE_API_BASE
+const browserSearch = API_BASE ? null : import('./browserSearch')
+
+async function searchApi(query, topK) {
+  const res = await fetch(`${API_BASE}/api/search`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query, top_k: topK })
+  })
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) {
+    throw new Error(data.detail || `Server responded with ${res.status}`)
+  }
+  return data.results || []
+}
+
+async function searchBrowser(query, topK) {
+  const { searchListings } = await browserSearch
+  return searchListings(query, topK)
+}
 
 function SearchBar({ value, onChange, onSubmit, loading }) {
   return (
@@ -41,23 +62,27 @@ export default function App() {
   const [results, setResults] = useState([])
   const [error, setError] = useState('')
   const [searched, setSearched] = useState(false)
+  // Browser mode: null while the model loads, then 'ready' or an error message
+  const [modelStatus, setModelStatus] = useState(API_BASE ? 'ready' : null)
+  const [progress, setProgress] = useState(0)
+
+  useEffect(() => {
+    if (!browserSearch) return
+    browserSearch
+      .then(({ loadIndex }) => loadIndex(setProgress))
+      .then(() => setModelStatus('ready'))
+      .catch((err) => setModelStatus(`Could not load the search model: ${err.message}`))
+  }, [])
 
   const search = async () => {
     if (!q.trim()) return
     setLoading(true)
     setError('')
     try {
-      const res = await fetch(`${API_BASE}/api/search`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: q, top_k: 12 })
-      })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) {
-        throw new Error(data.detail || `Server responded with ${res.status}`)
-      }
-      setResults(data.results || [])
+      const run = API_BASE ? searchApi : searchBrowser
+      setResults(await run(q, 12))
       setSearched(true)
+      if (!API_BASE) setModelStatus('ready')
     } catch (err) {
       setResults([])
       setError(`Search failed: ${err.message}`)
@@ -72,6 +97,14 @@ export default function App() {
         <div className="container">
           <div className="brand">Airbnb Finder</div>
           <SearchBar value={q} onChange={setQ} onSubmit={search} loading={loading} />
+          {modelStatus === null && (
+            <p className="small status">
+              {progress < 1
+                ? `Loading search model in your browser${progress > 0 ? ` (${Math.round(progress * 100)}%)` : ''}… first visit only, then it's cached.`
+                : 'Indexing listings…'}
+            </p>
+          )}
+          {modelStatus && modelStatus !== 'ready' && <p className="small status">{modelStatus}</p>}
         </div>
       </div>
 
@@ -93,7 +126,11 @@ export default function App() {
         )}
       </div>
 
-      <div className="footer">Built with FastAPI + React + Hugging Face</div>
+      <div className="footer">
+        {API_BASE
+          ? 'Built with FastAPI + React + Hugging Face'
+          : 'Built with React + Hugging Face transformers.js (search runs in your browser)'}
+      </div>
     </>
   )
 }

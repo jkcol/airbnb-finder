@@ -3,15 +3,17 @@
 
 A full-stack demo web application that lets users describe the Airbnb they want in natural language (e.g., *"a modern loft in NYC with fast Wi‑Fi and close to public transit"*) and returns the best matching listings.
 
+**Live demo:** https://jkcol.github.io/airbnb-finder/ — search runs entirely in your browser (the first visit downloads the ~35 MB model, then it's cached).
+
 - **Backend:** FastAPI (Python)
 - **LLM Integration:** Hugging Face (local via `transformers` *or* remote via Hugging Face Inference API)
-- **Frontend:** React (Vite)
+- **Frontend:** React (Vite); can run the same model in the browser with transformers.js
 - **Data:** Mock dataset in `data/listings.json`
 
 ## Stack
 
 **Backend:** Python, FastAPI, Uvicorn, PyTorch, Hugging Face `transformers`
-**Frontend:** React, Vite, JavaScript (JSX), CSS
+**Frontend:** React, Vite, JavaScript (JSX), CSS, Hugging Face `transformers.js` (ONNX Runtime Web)
 **ML:** sentence embeddings (`intfloat/e5-small-v2`), cosine-similarity ranking, semantic search
 **Concepts:** REST API design, vector similarity, natural-language query understanding
 
@@ -25,9 +27,11 @@ A full-stack demo web application that lets users describe the Airbnb they want 
 ## Features
 - Natural language search over Airbnb-style listings.
 - Rankings computed with sentence embeddings from a Hugging Face model (`intfloat/e5-small-v2`).
-- Two modes:
-  - **Local embedding** (default): loads the model with `transformers` + `torch`.
-  - **Remote embedding**: uses **Hugging Face Inference API** if you set `HUGGINGFACE_API_TOKEN` and `USE_HF_API=1`.
+- Three ways to run the embedding model:
+  - **In the browser** (frontend default, used by the live demo): `transformers.js` runs an ONNX export of the same model (`Xenova/e5-small-v2`). No server needed.
+  - **Backend, local embedding**: FastAPI loads the model with `transformers` + `torch`.
+  - **Backend, remote embedding**: FastAPI calls the **Hugging Face Inference API** if you set `HUGGINGFACE_API_TOKEN` and `USE_HF_API=1`.
+- Browser and backend build identical document text (with E5 `query:` / `passage:` prefixes), mean-pool, and rank by cosine similarity, so they return the same rankings.
 - Responsive UI with Airbnb-like cards (image, title, price, location, description, amenities).
 
 ---
@@ -38,7 +42,18 @@ A full-stack demo web application that lets users describe the Airbnb they want 
 - **Python** 3.9+ (tested on 3.10/3.11)
 - **Node.js** 18+ and **npm** 9+
 
-### 1) Backend Setup
+### Frontend only (in-browser search)
+```bash
+# From the project root
+npm install   # installs frontend deps via postinstall
+npm start     # starts Vite dev server at http://localhost:5173
+```
+
+Open **http://localhost:5173**. The model downloads into your browser on first load; no backend is needed.
+
+### With the FastAPI backend
+
+#### 1) Backend Setup
 ```bash
 # From the project root
 python -m venv .venv
@@ -60,14 +75,14 @@ uvicorn backend.main:app --reload --port 8000
 
 > **Note:** If you use the remote API, requests are sent to `https://router.huggingface.co/hf-inference/models/{model}/pipeline/feature-extraction` (override with `HF_API_URL`; `{model}` is substituted). The old `api-inference.huggingface.co` host has been retired by Hugging Face.
 
-### 2) Frontend Setup
+#### 2) Frontend Setup
 ```bash
 # From the project root
-npm install   # installs frontend deps via postinstall
-npm start     # starts Vite dev server at http://localhost:5173
+npm install
+VITE_API_BASE=http://localhost:8000 npm start
 ```
 
-Open **http://localhost:5173**. The frontend will call the backend at **http://localhost:8000**.
+Open **http://localhost:5173**. With `VITE_API_BASE` set, the frontend sends searches to the backend instead of running the model in the browser.
 
 ---
 
@@ -80,6 +95,11 @@ You can customize behavior using environment variables (for the backend):
 - `TOP_K_DEFAULT` — default number of results (defaults to `10`).
 - `HF_API_URL` — Inference API URL template; `{model}` is replaced with `MODEL_NAME`.
 
+Frontend (set when running `npm start` / `npm run build`):
+
+- `VITE_API_BASE` — backend URL (e.g. `http://localhost:8000`). If unset, search runs in the browser.
+- `VITE_BROWSER_MODEL` — model for in-browser search; defaults to `Xenova/e5-small-v2`.
+
 Create a `.env` file in the project root if you'd like (the backend loads it):
 ```env
 USE_HF_API=0
@@ -90,11 +110,19 @@ TOP_K_DEFAULT=10
 
 ---
 
+## Deploying to GitHub Pages
+`.github/workflows/pages.yml` builds the frontend and publishes it on every push to `main`. One-time setup: in the repo's **Settings → Pages**, set **Source** to **GitHub Actions**. The site is served at `https://<user>.github.io/<repo>/`.
+
+The Pages site always uses in-browser search, since GitHub Pages can't run the Python backend.
+
+---
+
 ## Project Structure
 ```
 / frontend        # React + Vite frontend
 / backend         # FastAPI backend (LLM + ranking)
 / data            # mock dataset (JSON)
+/ .github         # GitHub Pages deploy workflow
 README.md
 requirements.txt
 package.json
