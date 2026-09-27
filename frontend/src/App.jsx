@@ -39,20 +39,28 @@ export default function App() {
   const [q, setQ] = useState('')
   const [loading, setLoading] = useState(false)
   const [results, setResults] = useState([])
+  const [error, setError] = useState('')
+  const [searched, setSearched] = useState(false)
 
   const search = async () => {
     if (!q.trim()) return
     setLoading(true)
+    setError('')
     try {
       const res = await fetch(`${API_BASE}/api/search`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: q, top_k: 12 })
       })
-      const data = await res.json()
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        throw new Error(data.detail || `Server responded with ${res.status}`)
+      }
       setResults(data.results || [])
+      setSearched(true)
     } catch (err) {
-      alert('Search failed: ' + err)
+      setResults([])
+      setError(`Search failed: ${err.message}`)
     } finally {
       setLoading(false)
     }
@@ -68,8 +76,14 @@ export default function App() {
       </div>
 
       <div className="container">
-        {results.length === 0 ? (
-          <p className="small">Type a natural language description and press Search. Results will appear here.</p>
+        {error ? (
+          <p className="error">{error}</p>
+        ) : results.length === 0 ? (
+          <p className="small">
+            {searched
+              ? 'No listings matched your search.'
+              : 'Type a natural language description and press Search. Results will appear here.'}
+          </p>
         ) : (
           <div className="grid">
             {results.map((item) => (
