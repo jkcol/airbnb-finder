@@ -1,149 +1,99 @@
+# Airbnb Finder
 
-# Airbnb Finder (Hugging Face LLM)
+Search real Airbnb listings by describing what you want in plain English, e.g. *"a quiet 2 bedroom flat in London for 4 people under £250 with a garden"*.
 
-A full-stack demo web application that lets users describe the Airbnb they want in natural language (e.g., *"a modern loft in NYC with fast Wi‑Fi and close to public transit"*) and returns the best matching listings.
+**Live site:** https://jkcol.github.io/airbnb-finder/
 
-**Live demo:** https://jkcol.github.io/airbnb-finder/ — search runs entirely in your browser (the first visit downloads the ~35 MB model, then it's cached).
+- **12,000 real listings** across 12 cities (New York, Los Angeles, San Francisco, Chicago, Austin, London, Paris, Barcelona, Rome, Lisbon, Amsterdam, Tokyo). Each result links to the actual listing on airbnb.com.
+- **Semantic search** with sentence embeddings (`intfloat/e5-small-v2`): it matches on meaning (vibe, neighborhood, amenities), not just keywords.
+- **Automatic filters**: city, budget, group size, bedrooms, and room type mentioned in the query become filters you can see and adjust.
+- **Private and serverless**: the model runs in your browser with transformers.js. Queries never leave your device, and the site is plain static files on GitHub Pages.
+- Shareable URLs, sorting by price or rating, and a mobile-friendly layout with dark mode.
 
-- **Backend:** FastAPI (Python)
-- **LLM Integration:** Hugging Face (local via `transformers` *or* remote via Hugging Face Inference API)
-- **Frontend:** React (Vite); can run the same model in the browser with transformers.js
-- **Data:** Mock dataset in `data/listings.json`
+> Listing data comes from [Inside Airbnb](https://insideairbnb.com) under
+> [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). It is a periodic snapshot, so prices and
+> availability can differ from Airbnb today. This project is not affiliated with or endorsed by Airbnb.
 
-## Stack
+## How it works
 
-**Backend:** Python, FastAPI, Uvicorn, PyTorch, Hugging Face `transformers`
-**Frontend:** React, Vite, JavaScript (JSX), CSS, Hugging Face `transformers.js` (ONNX Runtime Web)
-**ML:** sentence embeddings (`intfloat/e5-small-v2`), cosine-similarity ranking, semantic search
-**Concepts:** REST API design, vector similarity, natural-language query understanding
+```
+ build time (scripts/build-data.mjs)              in the browser (frontend/)
+ ───────────────────────────────────              ─────────────────────────────────────
+ Inside Airbnb CSVs ──► filter & select   ─┐      query ──► parseQuery ──► filters
+   (active, reviewed, English, top 1000    │        │
+    per city)                              │        └──► E5 model (transformers.js, q8)
+                 │                         │                │  "query: …"
+                 ▼                         │                ▼
+ E5 model (Node, q8) "passage: …"          │      dot product vs. all listing vectors
+                 │                         │      + small rating/review prior, filtered
+                 ▼                         │                │
+ data/listings.json + data/embeddings.bin ─┴────────────────┘──► ranked cards
+       (metadata)       (int8, 12k × 384)
+```
 
-> **Scope:** this is a self-contained demo. Listings come from a mock dataset in
-> `data/listings.json` — there is no Airbnb API integration, and the project is not
-> affiliated with Airbnb. The point of the project is the embedding-based semantic
-> search pipeline, not the data source.
-
----
-
-## Features
-- Natural language search over Airbnb-style listings.
-- Rankings computed with sentence embeddings from a Hugging Face model (`intfloat/e5-small-v2`).
-- Three ways to run the embedding model:
-  - **In the browser** (frontend default, used by the live demo): `transformers.js` runs an ONNX export of the same model (`Xenova/e5-small-v2`). No server needed.
-  - **Backend, local embedding**: FastAPI loads the model with `transformers` + `torch`.
-  - **Backend, remote embedding**: FastAPI calls the **Hugging Face Inference API** if you set `HUGGINGFACE_API_TOKEN` and `USE_HF_API=1`.
-- Browser and backend build identical document text (with E5 `query:` / `passage:` prefixes), mean-pool, and rank by cosine similarity, so they return the same rankings.
-- Responsive UI with Airbnb-like cards (image, title, price, location, description, amenities).
-
----
+Listings are embedded once, at build time, with the same quantized ONNX model the browser runs (`Xenova/e5-small-v2`), so query and listing vectors share one space. The browser downloads the model (~35 MB, then cached) plus the index (~8 MB), and each search is a single model call and a pass over 12k vectors, which takes milliseconds.
 
 ## Quickstart
 
-### Prerequisites
-- **Python** 3.9+ (tested on 3.10/3.11)
-- **Node.js** 18+ and **npm** 9+
+Requires Node.js 18+.
 
-### Frontend only (in-browser search)
 ```bash
-# From the project root
 npm install   # installs frontend deps via postinstall
-npm start     # starts Vite dev server at http://localhost:5173
+npm start     # http://localhost:5173
+npm test      # query parser tests
 ```
 
-Open **http://localhost:5173**. The model downloads into your browser on first load; no backend is needed.
+## Refreshing the data
 
-### With the FastAPI backend
+The index in `data/` is committed. To rebuild it from the latest Inside Airbnb snapshots:
 
-#### 1) Backend Setup
 ```bash
-# From the project root
-python -m venv .venv
-# Windows: .venv\Scripts\activate
-source .venv/bin/activate
+npm run build-data                       # all cities, ~25 min on a laptop CPU
+cd scripts && CITIES=london,paris PER_CITY=500 npm run build-data   # a subset
+```
 
+Cities are configured in `ALL_CITIES` in [`scripts/build-data.mjs`](scripts/build-data.mjs); any city on the [Inside Airbnb data page](https://insideairbnb.com/get-the-data/) can be added by its URL slug. The model is English-only, so non-English listings are skipped.
+
+The [`Refresh listing data`](.github/workflows/refresh-data.yml) workflow rebuilds the index monthly (and on demand from the Actions tab), commits it if anything changed, and redeploys the site.
+
+## Deployment
+
+[`.github/workflows/pages.yml`](.github/workflows/pages.yml) builds the frontend and publishes it to GitHub Pages on every push to `main`. One-time setup: **Settings → Pages → Source: GitHub Actions**.
+
+## Optional: FastAPI backend
+
+The site doesn't need a server, but `backend/` serves the same search over HTTP, with the same index, filters and ranking. That's useful for integrating with other apps.
+
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements-local.txt      # includes torch + transformers
+uvicorn backend.main:app --port 8000
+
+# or, without torch, using the Hugging Face Inference API:
 pip install -r requirements.txt
-
-# Option A: Local model (default) — no token required
-# Just run the server:
-uvicorn backend.main:app --reload --port 8000
-
-# Option B: Use Hugging Face Inference API (lighter install; can skip torch)
-# (If you prefer, uninstall torch to save space and use the remote API.)
-export HUGGINGFACE_API_TOKEN=YOUR_HF_TOKEN
-export USE_HF_API=1
-uvicorn backend.main:app --reload --port 8000
+HUGGINGFACE_API_TOKEN=hf_... USE_HF_API=1 uvicorn backend.main:app --port 8000
 ```
 
-> **Note:** If you use the remote API, requests are sent to `https://router.huggingface.co/hf-inference/models/{model}/pipeline/feature-extraction` (override with `HF_API_URL`; `{model}` is substituted). The old `api-inference.huggingface.co` host has been retired by Hugging Face.
+Point the frontend at it with `VITE_API_BASE=http://localhost:8000 npm start`.
 
-#### 2) Frontend Setup
-```bash
-# From the project root
-npm install
-VITE_API_BASE=http://localhost:8000 npm start
+| Endpoint | Description |
+| --- | --- |
+| `POST /api/search` | Body: `{ "query": string, "top_k"?: number, "filters"?: { city, minPrice, maxPrice, guests, bedrooms, roomType } }` → `{ results: Listing[] }` sorted by `score` |
+| `GET /api/meta` | Cities, snapshot dates, listing counts |
+| `GET /health` | `{ status: "ok", listings: number }` |
+
+Backend environment variables (a `.env` file in the project root also works): `USE_HF_API`, `HUGGINGFACE_API_TOKEN`, `MODEL_NAME` (default `intfloat/e5-small-v2`), `TOP_K_DEFAULT` (24), `HF_API_URL`, `CORS_ORIGINS` (comma-separated, default `*`).
+
+## Project structure
+
 ```
-
-Open **http://localhost:5173**. With `VITE_API_BASE` set, the frontend sends searches to the backend instead of running the model in the browser.
-
----
-
-## Configuration
-You can customize behavior using environment variables (for the backend):
-
-- `USE_HF_API` — set to `1` to use the Hugging Face Inference API; otherwise local embeddings are used.
-- `HUGGINGFACE_API_TOKEN` — your token for the Inference API (required if `USE_HF_API=1`).
-- `MODEL_NAME` — defaults to `intfloat/e5-small-v2`.
-- `TOP_K_DEFAULT` — default number of results (defaults to `10`).
-- `HF_API_URL` — Inference API URL template; `{model}` is replaced with `MODEL_NAME`.
-
-Frontend (set when running `npm start` / `npm run build`):
-
-- `VITE_API_BASE` — backend URL (e.g. `http://localhost:8000`). If unset, search runs in the browser.
-- `VITE_BROWSER_MODEL` — model for in-browser search; defaults to `Xenova/e5-small-v2`.
-
-Create a `.env` file in the project root if you'd like (the backend loads it):
-```env
-USE_HF_API=0
-HUGGINGFACE_API_TOKEN=
-MODEL_NAME=intfloat/e5-small-v2
-TOP_K_DEFAULT=10
+frontend/   React + Vite site; src/search.js (engines), src/queryParser.js (filters)
+scripts/    build-data.mjs: downloads Inside Airbnb data and builds the index
+data/       generated index served with the site (listings.json, embeddings.bin)
+backend/    optional FastAPI server
+.github/    Pages deploy + monthly data refresh
 ```
-
----
-
-## Deploying to GitHub Pages
-`.github/workflows/pages.yml` builds the frontend and publishes it on every push to `main`. One-time setup: in the repo's **Settings → Pages**, set **Source** to **GitHub Actions**. The site is served at `https://<user>.github.io/<repo>/`.
-
-The Pages site always uses in-browser search, since GitHub Pages can't run the Python backend.
-
----
-
-## Project Structure
-```
-/ frontend        # React + Vite frontend
-/ backend         # FastAPI backend (LLM + ranking)
-/ data            # mock dataset (JSON)
-/ .github         # GitHub Pages deploy workflow
-README.md
-requirements.txt
-package.json
-```
-
----
-
-## API
-- `POST /api/search`
-  - **Body:** `{ "query": string, "top_k"?: number }`
-  - **Response:** `{ results: Array< Listing & { score: number } > }`
-
-- `GET /health` → `{ status: "ok" }`
-
----
-
-## Notes
-- The demo uses the **E5** family of embedding models (`intfloat/e5-small-v2`) for semantic search. For best results, queries are prefixed with `query:` and documents with `passage:` as recommended by the model authors.
-- If you're on a constrained machine, prefer the Inference API mode (`USE_HF_API=1`) to avoid installing `torch` locally.
-
----
 
 ## License
-MIT (for this demo code). Unsplash images are used via hotlinks and are subject to Unsplash licensing.
+
+Code: [MIT](LICENSE). Listing data: Inside Airbnb, CC BY 4.0. Listing photos are hotlinked from Airbnb and belong to their owners.

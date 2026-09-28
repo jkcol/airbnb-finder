@@ -1,0 +1,4 @@
+# Adds a local embedding model (default mode): pip install -r requirements-local.txt
+-r requirements.txt
+transformers>=4.43,<5
+torch>=2.3

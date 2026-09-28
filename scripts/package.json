@@ -1,0 +1,13 @@
+{
+  "name": "airbnb-finder-scripts",
+  "private": true,
+  "type": "module",
+  "description": "Build-time data pipeline: downloads Inside Airbnb listings and precomputes embeddings",
+  "scripts": {
+    "build-data": "node build-data.mjs"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^4.3.0",
+    "csv-parse": "^5.5.6"
+  }
+}
