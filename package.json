@@ -7,7 +7,7 @@
     "postinstall": "cd frontend && npm install",
     "start": "npm --prefix frontend start",
     "build": "npm --prefix frontend run build",
-    "test": "node --test frontend/src/",
+    "test": "node --test frontend/src/*.test.js",
     "build-data": "cd scripts && npm install && npm run build-data"
   }
 }
