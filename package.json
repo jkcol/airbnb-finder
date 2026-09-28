@@ -1,12 +1,13 @@
 {
   "name": "airbnb-finder",
   "private": true,
-  "version": "1.0.0",
-  "description": "Airbnb Finder full-stack app (React + FastAPI + HF LLM)",
+  "version": "2.0.0",
+  "description": "Natural-language search over real Airbnb listings, running in the browser (React + transformers.js)",
   "scripts": {
     "postinstall": "cd frontend && npm install",
     "start": "npm --prefix frontend start",
     "build": "npm --prefix frontend run build",
-    "test": "npm --prefix frontend test || echo 'no tests'"
+    "test": "node --test frontend/src/",
+    "build-data": "cd scripts && npm install && npm run build-data"
   }
 }
