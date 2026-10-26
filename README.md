@@ -7,7 +7,7 @@ Search real Airbnb listings by describing what you want in plain English, e.g. *
 - **12,000 real listings** across 12 cities (New York, Los Angeles, San Francisco, Chicago, Austin, London, Paris, Barcelona, Rome, Lisbon, Amsterdam, Tokyo). Each result links to the actual listing on airbnb.com.
 - **Semantic search** with sentence embeddings (`intfloat/e5-small-v2`): it matches on meaning (vibe, neighborhood, amenities), not just keywords.
 - **Automatic filters**: city, budget, group size, bedrooms, and room type mentioned in the query become filters you can see and adjust.
-- **Private and serverless**: the model runs in your browser with transformers.js. Queries never leave your device, and the site is plain static files on GitHub Pages.
+- **Private and serverless**: the model runs in your browser with transformers.js. Queries never leave your device, and the site is plain static files.
 - Shareable URLs, sorting by price or rating, and a mobile-friendly layout with dark mode.
 
 > Listing data comes from [Inside Airbnb](https://insideairbnb.com) under
@@ -54,44 +54,12 @@ cd scripts && CITIES=london,paris PER_CITY=500 npm run build-data   # a subset
 
 Cities are configured in `ALL_CITIES` in [`scripts/build-data.mjs`](scripts/build-data.mjs); any city on the [Inside Airbnb data page](https://insideairbnb.com/get-the-data/) can be added by its URL slug. The model is English-only, so non-English listings are skipped.
 
-The [`Refresh listing data`](.github/workflows/refresh-data.yml) workflow rebuilds the index monthly (and on demand from the Actions tab), commits it if anything changed, and redeploys the site.
-
-## Deployment
-
-[`.github/workflows/pages.yml`](.github/workflows/pages.yml) builds the frontend and publishes it to GitHub Pages on every push to `main`. One-time setup: **Settings → Pages → Source: GitHub Actions**.
-
-## Optional: FastAPI backend
-
-The site doesn't need a server, but `backend/` serves the same search over HTTP, with the same index, filters and ranking. That's useful for integrating with other apps.
-
-```bash
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements-local.txt      # includes torch + transformers
-uvicorn backend.main:app --port 8000
-
-# or, without torch, using the Hugging Face Inference API:
-pip install -r requirements.txt
-HUGGINGFACE_API_TOKEN=hf_... USE_HF_API=1 uvicorn backend.main:app --port 8000
-```
-
-Point the frontend at it with `VITE_API_BASE=http://localhost:8000 npm start`.
-
-| Endpoint | Description |
-| --- | --- |
-| `POST /api/search` | Body: `{ "query": string, "top_k"?: number, "filters"?: { city, minPrice, maxPrice, guests, bedrooms, roomType } }` → `{ results: Listing[] }` sorted by `score` |
-| `GET /api/meta` | Cities, snapshot dates, listing counts |
-| `GET /health` | `{ status: "ok", listings: number }` |
-
-Backend environment variables (a `.env` file in the project root also works): `USE_HF_API`, `HUGGINGFACE_API_TOKEN`, `MODEL_NAME` (default `intfloat/e5-small-v2`), `TOP_K_DEFAULT` (24), `HF_API_URL`, `CORS_ORIGINS` (comma-separated, default `*`).
-
 ## Project structure
 
 ```
-frontend/   React + Vite site; src/search.js (engines), src/queryParser.js (filters)
+frontend/   React + Vite site; src/search.js (search), src/queryParser.js (filters)
 scripts/    build-data.mjs: downloads Inside Airbnb data and builds the index
 data/       generated index served with the site (listings.json, embeddings.bin)
-backend/    optional FastAPI server
-.github/    Pages deploy + monthly data refresh
 ```
 
 ## License

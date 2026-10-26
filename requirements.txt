@@ -1,7 +1,0 @@
-# Core server. Enough for Inference API mode (USE_HF_API=1).
-fastapi==0.115.6
-uvicorn[standard]==0.32.1
-numpy>=1.26,<3
-pydantic>=2.8,<3
-python-dotenv==1.0.1
-requests==2.32.3

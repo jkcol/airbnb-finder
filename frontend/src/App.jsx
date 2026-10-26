@@ -1,11 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { createApiEngine, createBrowserEngine } from './search'
+import { createBrowserEngine } from './search'
 import { parseQuery } from './queryParser'
 
-// Set VITE_API_BASE (e.g. http://localhost:8000) to search via the FastAPI
-// backend; otherwise the model runs in the browser and no server is needed.
-const API_BASE = import.meta.env.VITE_API_BASE
-const engine = API_BASE ? createApiEngine(API_BASE) : createBrowserEngine()
+// The model runs in the browser, so no server is needed.
+const engine = createBrowserEngine()
 
 const PAGE = 24
 const EXAMPLES = [
@@ -235,9 +233,7 @@ export default function App() {
           />
           {!meta && !loadError && (
             <p className="status">
-              {API_BASE
-                ? 'Connecting to the search server…'
-                : <>Loading the search model in your browser{progress > 0 && progress < 1 ? ` (${Math.round(progress * 100)}%)` : ''}… this happens once, then it's cached.</>}
+              Loading the search model in your browser{progress > 0 && progress < 1 ? ` (${Math.round(progress * 100)}%)` : ''}… this happens once, then it's cached.
             </p>
           )}
           {loadError && (
@@ -296,7 +292,7 @@ export default function App() {
         </p>
         <p>
           Not affiliated with or endorsed by Airbnb.
-          {!API_BASE && ' Search runs entirely in your browser — your queries never leave your device.'}
+          Search runs entirely in your browser — your queries never leave your device.
           {' '}<a href="https://github.com/jkcol/airbnb-finder" target="_blank" rel="noopener noreferrer">Source on GitHub</a>
         </p>
       </footer>

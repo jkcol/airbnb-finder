@@ -1,10 +1,9 @@
-// Search engines. Both expose the same interface:
+// Search engine:
 //   load(onProgress) -> { cities, generated }   onProgress receives 0..1
 //   search(query, filters, limit) -> listings with a `score`
 //
-// The browser engine (default) runs the E5 model with transformers.js and
-// ranks against embeddings precomputed by scripts/build-data.mjs, so the site
-// needs no server. The API engine delegates to the FastAPI backend.
+// Runs the E5 model in the browser with transformers.js and ranks against
+// embeddings precomputed by scripts/build-data.mjs, so no server is needed.
 
 const MODEL_ID = 'Xenova/e5-small-v2'
 const DATA_URL = import.meta.env.BASE_URL
@@ -86,26 +85,9 @@ export function createBrowserEngine() {
   return { load, search }
 }
 
-export function createApiEngine(base) {
-  return {
-    async load() {
-      return okJson(await fetch(`${base}/api/meta`))
-    },
-    async search(query, filters = {}, limit = 96) {
-      const res = await fetch(`${base}/api/search`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query, top_k: limit, filters }),
-      })
-      return (await okJson(res)).results
-    },
-  }
-}
-
 async function okJson(res) {
-  const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(data.detail || `${res.url} responded with ${res.status}`)
-  return data
+  if (!res.ok) throw new Error(`${res.url} responded with ${res.status}`)
+  return res.json()
 }
 
 async function okBuffer(res) {
